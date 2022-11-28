@@ -101,8 +101,12 @@ func (s *HTTPHandlers) PeeringGenerateToken(resp http.ResponseWriter, req *http.
 	}
 
 	args := pbpeering.NewGenerateTokenRequestFromAPI(&apiRequest)
-	if args.PeerName == "" {
-		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "PeerName is required in the payload when generating a new peering token."}
+	if args.Peer == "" && args.PeerName == "" {
+		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "Peer is required in the payload when generating a new peering token."}
+	}
+	// TODO: remove deprecated flag in future release
+	if args.PeerName != "" {
+		args.Peer = args.PeerName
 	}
 
 	var entMeta acl.EnterpriseMeta
@@ -142,9 +146,14 @@ func (s *HTTPHandlers) PeeringEstablish(resp http.ResponseWriter, req *http.Requ
 	}
 
 	args := pbpeering.NewEstablishRequestFromAPI(&apiRequest)
-	if args.PeerName == "" {
-		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "PeerName is required in the payload when establishing a peering."}
+	if args.Peer == "" && args.PeerName == "" {
+		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "Peer is required in the payload when establishing a peering."}
 	}
+	// TODO: remove deprecated flag in future release
+	if args.PeerName != "" {
+		args.Peer = args.PeerName
+	}
+
 	if args.PeeringToken == "" {
 		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "PeeringToken is required in the payload when establishing a peering."}
 	}
