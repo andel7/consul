@@ -37,7 +37,7 @@ func TestCatalogRegister_PeeringRegistration(t *testing.T) {
 
 		obj, err := a.srv.CatalogRegister(nil, req)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot register requests with Peer in them")
+		require.Contains(t, err.Error(), "cannot register requests with PeerName in them")
 		require.Nil(t, obj)
 	})
 
@@ -52,7 +52,7 @@ func TestCatalogRegister_PeeringRegistration(t *testing.T) {
 
 		obj, err := a.srv.CatalogRegister(nil, req)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "cannot register requests with Peer in them")
+		require.Contains(t, err.Error(), "cannot register requests with PeerName in them")
 		require.Nil(t, obj)
 	})
 

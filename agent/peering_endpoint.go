@@ -101,10 +101,12 @@ func (s *HTTPHandlers) PeeringGenerateToken(resp http.ResponseWriter, req *http.
 	}
 
 	args := pbpeering.NewGenerateTokenRequestFromAPI(&apiRequest)
+	//nolint:staticcheck
 	if args.Peer == "" && args.PeerName == "" {
 		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "Peer is required in the payload when generating a new peering token."}
 	}
 	// TODO: remove deprecated flag in future release
+	//nolint:staticcheck
 	if args.PeerName != "" {
 		args.Peer = args.PeerName
 	}
@@ -146,10 +148,12 @@ func (s *HTTPHandlers) PeeringEstablish(resp http.ResponseWriter, req *http.Requ
 	}
 
 	args := pbpeering.NewEstablishRequestFromAPI(&apiRequest)
+	//nolint:staticcheck
 	if args.Peer == "" && args.PeerName == "" {
 		return nil, HTTPError{StatusCode: http.StatusBadRequest, Reason: "Peer is required in the payload when establishing a peering."}
 	}
 	// TODO: remove deprecated flag in future release
+	//nolint:staticcheck
 	if args.PeerName != "" {
 		args.Peer = args.PeerName
 	}
