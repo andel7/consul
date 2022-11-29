@@ -299,7 +299,7 @@ message PeeringWriteRequest {
   SecretsWriteRequest SecretsRequest = 2;
 
   // Deprecated: Use Peering.Meta instead.
-  map<string, string> Meta = 3 [deprecated=true];
+  map<string, string> Meta = 3 [deprecated = true];
 }
 
 // TODO(peering): Consider returning Peering if we keep this endpoint around
@@ -363,7 +363,7 @@ message PeeringTrustBundleDeleteResponse {}
 // name=API
 message GenerateTokenRequest {
   // Deprecated: use Peer instead.
-  string PeerName = 1 [deprecated=true];
+  string PeerName = 1 [deprecated = true];
   // Name of the remote peer.
   string Peer = 7;
 
@@ -397,7 +397,7 @@ message GenerateTokenResponse {
 // name=API
 message EstablishRequest {
   // Deprecated: use Peer instead.
-  string PeerName = 1 [deprecated=true];
+  string PeerName = 1 [deprecated = true];
   // Name of the remote peer.
   string Peer = 5;
 
