@@ -472,8 +472,6 @@ func NewServer(config *Config, flat Deps, externalGRPCServer *grpc.Server) (*Ser
 
 	// TODO(NET-1380, NET-1381): thread this into the net/rpc and gRPC interceptors.
 	s.incomingRPCLimiter = rpcRate.NewHandler(rpcRate.HandlerConfig{
-		// TODO(NET-1379):
-		// - should disabled mode not register this handler?  Or does the handler have logic for disabled?
 		GlobalMode: rpcRate.Mode(config.RequestLimitsMode),
 		GlobalReadConfig: multilimiter.LimiterConfig{
 			Rate:  config.RequestLimitsReadRate,
@@ -1691,8 +1689,6 @@ func (s *Server) ReloadConfig(config ReloadableConfig) error {
 	s.rpcLimiter.Store(rate.NewLimiter(config.RPCRateLimit, config.RPCMaxBurst))
 
 	s.incomingRPCLimiter.UpdateConfig(rpcRate.HandlerConfig{
-		// TODO(NET-1379):
-		// - should disabled mode not register this handler?  Or does the handler have logic for disabled?
 		GlobalMode: config.RequestLimitsMode,
 		GlobalReadConfig: multilimiter.LimiterConfig{
 			Rate:  config.RequestLimitsReadRate,
