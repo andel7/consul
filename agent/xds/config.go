@@ -49,6 +49,11 @@ type ProxyConfig struct {
 	// respected (15s)
 	LocalRequestTimeoutMs *int `mapstructure:"local_request_timeout_ms"`
 
+	// LocalIdleTimeoutMs is the number of milliseconds to timeout HTTP streams
+	// to the local app instance. If not set, no value is set, Envoy defaults are
+	// respected (300s)
+	LocalIdleTimeoutMs *int `mapstructure:"local_idle_timeout_ms"`
+
 	// Protocol describes the service's protocol. Valid values are "tcp",
 	// "http" and "grpc". Anything else is treated as tcp. This enables
 	// protocol aware features like per-request metrics and connection
@@ -132,6 +137,13 @@ type GatewayConfig struct {
 	// ConnectTimeoutMs is the number of milliseconds to timeout making a new
 	// connection to this upstream. Defaults to 5000 (5 seconds) if not set.
 	ConnectTimeoutMs int `mapstructure:"connect_timeout_ms"`
+
+	// TCP keepalive settings for remote gateway upstreams (mesh gateways and terminating gateway upstreams).
+	// See: https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/core/v3/address.proto#envoy-v3-api-msg-config-core-v3-tcpkeepalive
+	TcpKeepaliveEnable   bool `mapstructure:"envoy_gateway_remote_tcp_enable_keepalive"`
+	TcpKeepaliveTime     int  `mapstructure:"envoy_gateway_remote_tcp_keepalive_time"`
+	TcpKeepaliveInterval int  `mapstructure:"envoy_gateway_remote_tcp_keepalive_interval"`
+	TcpKeepaliveProbes   int  `mapstructure:"envoy_gateway_remote_tcp_keepalive_probes"`
 }
 
 // ParseGatewayConfig returns the GatewayConfig parsed from an opaque map. If an
