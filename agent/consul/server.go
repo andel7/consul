@@ -34,6 +34,7 @@ import (
 	"github.com/hashicorp/consul/agent/consul/authmethod/ssoauth"
 	"github.com/hashicorp/consul/agent/consul/fsm"
 	rpcRate "github.com/hashicorp/consul/agent/consul/rate"
+	"github.com/hashicorp/consul/agent/consul/rate/multilimiter"
 	"github.com/hashicorp/consul/agent/consul/state"
 	"github.com/hashicorp/consul/agent/consul/stream"
 	"github.com/hashicorp/consul/agent/consul/usagemetrics"
@@ -141,6 +142,8 @@ const (
 	PoolKindPartition = "partition"
 	PoolKindSegment   = "segment"
 )
+
+const requestLimitsBurstMultiplier = 10
 
 // Server is Consul server which manages the service discovery,
 // health checking, DC forwarding, Raft, and multiple Serf pools.
@@ -394,6 +397,7 @@ type Server struct {
 	EnterpriseServer
 	operatorServer *operator.Server
 }
+
 type connHandler interface {
 	Run() error
 	Handle(conn net.Conn)
@@ -468,8 +472,17 @@ func NewServer(config *Config, flat Deps, externalGRPCServer *grpc.Server) (*Ser
 
 	// TODO(NET-1380, NET-1381): thread this into the net/rpc and gRPC interceptors.
 	s.incomingRPCLimiter = rpcRate.NewHandler(rpcRate.HandlerConfig{
-		// TODO(NET-1379): pass in _real_ configuration.
-		GlobalMode: rpcRate.ModePermissive,
+		// TODO(NET-1379):
+		// - should disabled mode not register this handler?  Or does the handler have logic for disabled?
+		GlobalMode: rpcRate.Mode(config.RequestLimitsMode),
+		GlobalReadConfig: multilimiter.LimiterConfig{
+			Rate:  config.RequestLimitsReadRate,
+			Burst: int(config.RequestLimitsReadRate) * requestLimitsBurstMultiplier,
+		},
+		GlobalWriteConfig: multilimiter.LimiterConfig{
+			Rate:  config.RequestLimitsWriteRate,
+			Burst: int(config.RequestLimitsWriteRate) * requestLimitsBurstMultiplier,
+		},
 	}, s)
 	s.incomingRPCLimiter.Run(&lib.StopChannelContext{StopCh: s.shutdownCh})
 
@@ -1676,6 +1689,21 @@ func (s *Server) ReloadConfig(config ReloadableConfig) error {
 	}
 
 	s.rpcLimiter.Store(rate.NewLimiter(config.RPCRateLimit, config.RPCMaxBurst))
+
+	s.incomingRPCLimiter.UpdateConfig(rpcRate.HandlerConfig{
+		// TODO(NET-1379):
+		// - should disabled mode not register this handler?  Or does the handler have logic for disabled?
+		GlobalMode: config.RequestLimitsMode,
+		GlobalReadConfig: multilimiter.LimiterConfig{
+			Rate:  config.RequestLimitsReadRate,
+			Burst: int(config.RequestLimitsReadRate) * requestLimitsBurstMultiplier,
+		},
+		GlobalWriteConfig: multilimiter.LimiterConfig{
+			Rate:  config.RequestLimitsWriteRate,
+			Burst: int(config.RequestLimitsWriteRate) * requestLimitsBurstMultiplier,
+		},
+	})
+
 	s.rpcConnLimiter.SetConfig(connlimit.Config{
 		MaxConnsPerClientIP: config.RPCMaxConnsPerClient,
 	})
